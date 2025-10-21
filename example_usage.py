@@ -7,6 +7,14 @@ This script demonstrates how to create and use different SelfIndex variants.
 from self_index import SelfIndex, create_self_index
 from pathlib import Path
 import json
+import pandas as pd
+
+
+def load_preprocessed_dataset(path="dataset/preprocessed_dataset.csv", max_docs=None):
+    df = pd.read_csv(path)
+    if max_docs:
+        df = df.head(max_docs)
+    return [(str(row['id']), str(row['text'])) for _, row in df.iterrows()]
 
 
 def demo_basic_usage():
@@ -16,12 +24,7 @@ def demo_basic_usage():
     print("=" * 70)
     
     # Sample documents
-    documents = [
-        ("doc1", "The quick brown fox jumps over the lazy dog"),
-        ("doc2", "A quick brown dog runs fast"),
-        ("doc3", "The lazy cat sleeps all day"),
-        ("doc4", "Fast cars and quick reflexes"),
-    ]
+    documents = load_preprocessed_dataset()
     
     # Create a Boolean index
     print("\n1. Creating Boolean Index...")
@@ -96,13 +99,7 @@ def demo_boolean_queries():
     print("=" * 70)
     
     # Create test documents
-    documents = [
-        ("doc1", "apple banana cherry date"),
-        ("doc2", "banana cherry elderberry fig"),
-        ("doc3", "apple cherry grape"),
-        ("doc4", "date elderberry fig grape"),
-        ("doc5", "apple banana date grape"),
-    ]
+    documents = load_preprocessed_dataset()
     
     index = create_self_index('demo_boolean_queries', documents, info='BOOLEAN')
     
@@ -134,12 +131,7 @@ def demo_phrase_queries():
     print("Phrase Query Demo")
     print("=" * 70)
     
-    documents = [
-        ("doc1", "the quick brown fox jumps over the lazy dog"),
-        ("doc2", "a quick brown dog and a lazy cat"),
-        ("doc3", "the fox is quick and brown but not lazy"),
-        ("doc4", "brown quick animals are interesting"),
-    ]
+    documents = load_preprocessed_dataset()
     
     index = create_self_index('demo_phrase', documents, info='BOOLEAN')
     
@@ -167,10 +159,7 @@ def demo_persistence():
     print("Index Persistence Demo")
     print("=" * 70)
     
-    documents = [
-        ("doc1", "test document one"),
-        ("doc2", "test document two"),
-    ]
+    documents = load_preprocessed_dataset()
     
     # Create and save an index
     print("\n1. Creating and saving index...")
@@ -239,10 +228,7 @@ def demo_compression():
     print("=" * 70)
     
     # Create a larger document set for meaningful compression
-    documents = [
-        (f"doc{i}", f"document with many repeated words word word word number {i}")
-        for i in range(100)
-    ]
+    documents = load_preprocessed_dataset()
     
     print("\n1. Creating indices with different compression methods...")
     
@@ -286,11 +272,7 @@ def demo_all_variants():
     print("All SelfIndex Variants")
     print("=" * 70)
     
-    documents = [
-        ("doc1", "python programming language"),
-        ("doc2", "java programming language"),
-        ("doc3", "javascript web development"),
-    ]
+    documents = load_preprocessed_dataset()
     
     variants = [
         ('BOOLEAN', 'CUSTOM', 'TERMatat', 'NONE', 'Null'),
