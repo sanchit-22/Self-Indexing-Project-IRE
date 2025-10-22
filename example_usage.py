@@ -14,7 +14,9 @@ def load_preprocessed_dataset(path="dataset/preprocessed_dataset.csv", max_docs=
     df = pd.read_csv(path)
     if max_docs:
         df = df.head(max_docs)
-    return [(str(row['id']), str(row['text'])) for _, row in df.iterrows()]
+    
+    # Use the original_text column instead of processed_tokens
+    return [(str(row['id']), str(row['original_text'])) for _, row in df.iterrows()]
 
 
 def demo_basic_usage():
