@@ -27,6 +27,20 @@ try:
 except ImportError:
     QUERY_PARSER_AVAILABLE = False
 
+# Import compression utilities
+try:
+    from compression import get_compressor, CompressionBase
+    COMPRESSION_AVAILABLE = True
+except ImportError:
+    COMPRESSION_AVAILABLE = False
+
+# Import database backends
+try:
+    from db_backends import get_backend, DatabaseBackend
+    DB_BACKENDS_AVAILABLE = True
+except ImportError:
+    DB_BACKENDS_AVAILABLE = False
+
 
 class SelfIndex(IndexBase):
     """
@@ -60,6 +74,18 @@ class SelfIndex(IndexBase):
         self.compression_type = Compression[compr]
         self.query_proc_type = QueryProc[qproc]
         self.optimization_type = Optimizations[optim]
+        
+        # Initialize compression handler
+        if COMPRESSION_AVAILABLE:
+            self.compressor = get_compressor(compr)
+        else:
+            self.compressor = None
+        
+        # Initialize database backend
+        if DB_BACKENDS_AVAILABLE:
+            self.db_backend = get_backend(dstore)
+        else:
+            self.db_backend = None
         
         # Initialize index structures
         self.inverted_index: Dict[str, Dict[str, Any]] = {}
@@ -207,19 +233,23 @@ class SelfIndex(IndexBase):
         Args:
             index_id: The unique identifier for the index
         """
-        if self.datastore_type == DataStore.CUSTOM:
-            # Save using pickle
+        index_data = {
+            'inverted_index': self.inverted_index,
+            'doc_lengths': self.doc_lengths,
+            'doc_metadata': self.doc_metadata,
+            'vocabulary': self.vocabulary,
+            'num_docs': self.num_docs,
+            'avg_doc_length': self.avg_doc_length,
+            'identifier_short': self.identifier_short,
+            'identifier_long': self.identifier_long
+        }
+        
+        if DB_BACKENDS_AVAILABLE and self.db_backend:
+            # Use database backend
+            self.db_backend.save_index(index_id, index_data, self.INDEX_STORAGE_DIR)
+        else:
+            # Fallback to original custom implementation
             index_path = self._get_index_path(index_id)
-            index_data = {
-                'inverted_index': self.inverted_index,
-                'doc_lengths': self.doc_lengths,
-                'doc_metadata': self.doc_metadata,
-                'vocabulary': self.vocabulary,
-                'num_docs': self.num_docs,
-                'avg_doc_length': self.avg_doc_length,
-                'identifier_short': self.identifier_short,
-                'identifier_long': self.identifier_long
-            }
             with open(index_path, 'wb') as f:
                 pickle.dump(index_data, f)
             
@@ -234,24 +264,38 @@ class SelfIndex(IndexBase):
             }
             with open(metadata_path, 'w') as f:
                 json.dump(metadata, f, indent=2)
-        else:
-            # DB backends will be implemented separately
-            raise NotImplementedError(f"Datastore type {self.datastore_type} not yet implemented")
     
     def load_index(self, serialized_index_dump: str) -> None:
         """
         Loads an already created index into memory from disk.
         
         Args:
-            serialized_index_dump: Path to dump of serialized index
+            serialized_index_dump: Path to dump of serialized index or index_id
         """
-        index_path = Path(serialized_index_dump)
-        
-        if not index_path.exists():
-            raise FileNotFoundError(f"Index file not found: {index_path}")
-        
-        with open(index_path, 'rb') as f:
-            index_data = pickle.load(f)
+        # Check if it's a path or just an index_id
+        if '/' in serialized_index_dump or '\\' in serialized_index_dump:
+            # It's a path
+            index_path = Path(serialized_index_dump)
+            
+            if not index_path.exists():
+                raise FileNotFoundError(f"Index file not found: {index_path}")
+            
+            with open(index_path, 'rb') as f:
+                index_data = pickle.load(f)
+        else:
+            # It's an index_id
+            index_id = serialized_index_dump
+            
+            if DB_BACKENDS_AVAILABLE and self.db_backend:
+                index_data = self.db_backend.load_index(index_id, self.INDEX_STORAGE_DIR)
+            else:
+                # Fallback to loading from file
+                index_path = self._get_index_path(index_id)
+                if not index_path.exists():
+                    raise FileNotFoundError(f"Index file not found: {index_path}")
+                
+                with open(index_path, 'rb') as f:
+                    index_data = pickle.load(f)
         
         # Restore index structures
         self.inverted_index = index_data['inverted_index']
@@ -390,7 +434,24 @@ class SelfIndex(IndexBase):
                 print(f"Query parsing failed: {e}. Falling back to simple query.")
                 pass
         
-        # Simple term-based search
+        # Choose processing strategy based on query_proc_type
+        if self.query_proc_type == QueryProc.DOCatat:
+            return self._document_at_a_time_query(query)
+        else:
+            # Default: Term-at-a-time
+            return self._term_at_a_time_query(query)
+    
+    def _term_at_a_time_query(self, query: str) -> List[Dict[str, Any]]:
+        """
+        Term-at-a-time query processing.
+        Processes one term at a time and accumulates scores.
+        
+        Args:
+            query: Query string
+            
+        Returns:
+            List of ranked results
+        """
         terms = self._preprocess_text(query)
         
         # Collect all matching documents
@@ -406,6 +467,10 @@ class SelfIndex(IndexBase):
                     elif self.info_type == IndexInfo.TFIDF:
                         doc_scores[doc_id] += self.inverted_index[term][doc_id].get('tfidf', 0.0)
         
+        # Apply optimizations if enabled
+        if self.optimization_type != Optimizations.Null:
+            doc_scores = self._apply_optimization(doc_scores, terms)
+        
         # Sort by score
         results = [
             {'doc_id': doc_id, 'score': score}
@@ -413,6 +478,86 @@ class SelfIndex(IndexBase):
         ]
         
         return results
+    
+    def _document_at_a_time_query(self, query: str) -> List[Dict[str, Any]]:
+        """
+        Document-at-a-time query processing.
+        Processes one document at a time and calculates complete score.
+        
+        Args:
+            query: Query string
+            
+        Returns:
+            List of ranked results
+        """
+        terms = self._preprocess_text(query)
+        
+        # Get all candidate documents (documents containing at least one term)
+        candidate_docs = set()
+        for term in terms:
+            if term in self.inverted_index:
+                candidate_docs.update(self.inverted_index[term].keys())
+        
+        # Calculate scores for each document
+        doc_scores: Dict[str, float] = {}
+        
+        for doc_id in candidate_docs:
+            score = 0.0
+            for term in terms:
+                if term in self.inverted_index and doc_id in self.inverted_index[term]:
+                    if self.info_type == IndexInfo.BOOLEAN:
+                        score += 1.0
+                    elif self.info_type == IndexInfo.WORDCOUNT:
+                        score += self.inverted_index[term][doc_id].get('tf', 1)
+                    elif self.info_type == IndexInfo.TFIDF:
+                        score += self.inverted_index[term][doc_id].get('tfidf', 0.0)
+            
+            doc_scores[doc_id] = score
+        
+        # Apply optimizations if enabled
+        if self.optimization_type != Optimizations.Null:
+            doc_scores = self._apply_optimization(doc_scores, terms)
+        
+        # Sort by score
+        results = [
+            {'doc_id': doc_id, 'score': score}
+            for doc_id, score in sorted(doc_scores.items(), key=lambda x: x[1], reverse=True)
+        ]
+        
+        return results
+    
+    def _apply_optimization(self, doc_scores: Dict[str, float], terms: List[str]) -> Dict[str, float]:
+        """
+        Apply optimization strategy to query results.
+        
+        Args:
+            doc_scores: Dictionary of document scores
+            terms: Query terms
+            
+        Returns:
+            Optimized document scores
+        """
+        if self.optimization_type == Optimizations.Thresholding:
+            # Apply threshold-based pruning
+            if doc_scores:
+                threshold = max(doc_scores.values()) * 0.1  # Keep docs with score >= 10% of max
+                doc_scores = {doc_id: score for doc_id, score in doc_scores.items() if score >= threshold}
+        
+        elif self.optimization_type == Optimizations.EarlyStopping:
+            # Early stopping: return top-k results early
+            top_k = 100
+            if len(doc_scores) > top_k:
+                sorted_docs = sorted(doc_scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
+                doc_scores = dict(sorted_docs)
+        
+        elif self.optimization_type == Optimizations.Skipping:
+            # Skipping: process only documents with high potential
+            # For simplicity, skip documents with very low scores
+            if doc_scores:
+                avg_score = sum(doc_scores.values()) / len(doc_scores)
+                doc_scores = {doc_id: score for doc_id, score in doc_scores.items() if score >= avg_score * 0.5}
+        
+        return doc_scores
     
     def delete_index(self, index_id: str) -> None:
         """
@@ -425,14 +570,17 @@ class SelfIndex(IndexBase):
         if index_id in SelfIndex._loaded_indices:
             del SelfIndex._loaded_indices[index_id]
         
-        # Delete files
-        index_path = self._get_index_path(index_id)
-        metadata_path = self._get_index_metadata_path(index_id)
-        
-        if index_path.exists():
-            index_path.unlink()
-        if metadata_path.exists():
-            metadata_path.unlink()
+        if DB_BACKENDS_AVAILABLE and self.db_backend:
+            self.db_backend.delete_index(index_id, self.INDEX_STORAGE_DIR)
+        else:
+            # Fallback to deleting files
+            index_path = self._get_index_path(index_id)
+            metadata_path = self._get_index_metadata_path(index_id)
+            
+            if index_path.exists():
+                index_path.unlink()
+            if metadata_path.exists():
+                metadata_path.unlink()
     
     @classmethod
     def list_indices(cls) -> Iterable[str]:
@@ -442,6 +590,22 @@ class SelfIndex(IndexBase):
         Returns:
             List of index IDs
         """
+        # Try to use database backend
+        if DB_BACKENDS_AVAILABLE:
+            try:
+                # Try each backend type
+                for backend_name in ['CUSTOM', 'DB1', 'DB2']:
+                    try:
+                        backend = get_backend(backend_name)
+                        indices = backend.list_indices(cls.INDEX_STORAGE_DIR)
+                        if indices:
+                            return list(set(indices))  # Remove duplicates
+                    except:
+                        continue
+            except:
+                pass
+        
+        # Fallback to file-based listing
         if not cls.INDEX_STORAGE_DIR.exists():
             return []
         
