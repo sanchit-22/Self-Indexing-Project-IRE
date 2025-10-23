@@ -1,0 +1,8 @@
+{
+  "system_name": "ESIndex-v1.0",
+  "dataset": "wikipedia",
+  "document_count": 50000,
+  "index_name": "esindex-v1.0",
+  "timestamp": "2025-10-23T19:02:52.920375",
+  "metrics": {}
+}
