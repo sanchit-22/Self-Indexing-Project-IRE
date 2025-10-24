@@ -1,0 +1,107 @@
+{
+  "evaluation_summary": {
+    "total_configurations": 10,
+    "successful_tests": 10,
+    "failed_tests": 0,
+    "success_rate": 100.0
+  },
+  "best_performers": {
+    "latency": {
+      "config": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
+      "value": 0.6389021873474121,
+      "config_details": {
+        "name": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
+        "config_id": 5,
+        "index_type": "BOOLEAN",
+        "datastore": "CUSTOM",
+        "compression": "CODE",
+        "query_proc": "TERMatat",
+        "optimization": "Null",
+        "x": 1,
+        "y": 1,
+        "z": 2,
+        "i": 0,
+        "q": "T"
+      }
+    },
+    "throughput": {
+      "config": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
+      "value": 8726.526675521844,
+      "config_details": {
+        "name": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
+        "config_id": 5,
+        "index_type": "BOOLEAN",
+        "datastore": "CUSTOM",
+        "compression": "CODE",
+        "query_proc": "TERMatat",
+        "optimization": "Null",
+        "x": 1,
+        "y": 1,
+        "z": 2,
+        "i": 0,
+        "q": "T"
+      }
+    },
+    "memory": {
+      "config": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
+      "value": 29.952776022605352,
+      "config_details": {
+        "name": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
+        "config_id": 2,
+        "index_type": "BOOLEAN",
+        "datastore": "CUSTOM",
+        "compression": "NONE",
+        "query_proc": "DOCatat",
+        "optimization": "Null",
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "i": 0,
+        "q": "D"
+      }
+    },
+    "functional": {
+      "config": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
+      "value": 0.43003663003663,
+      "config_details": {
+        "name": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
+        "config_id": 2,
+        "index_type": "BOOLEAN",
+        "datastore": "CUSTOM",
+        "compression": "NONE",
+        "query_proc": "DOCatat",
+        "optimization": "Null",
+        "x": 1,
+        "y": 1,
+        "z": 1,
+        "i": 0,
+        "q": "D"
+      }
+    }
+  },
+  "esindex_comparison": {
+    "esindex_baseline": {
+      "latency": {
+        "p95": 18.88,
+        "p99": 26.14,
+        "mean": 12.57
+      },
+      "throughput": {
+        "single_thread_qps": 91.63,
+        "multi_thread_qps": 375.91
+      },
+      "memory": {
+        "index_size_mb": 140.9,
+        "documents_per_mb": 354.9
+      },
+      "functional": {
+        "mean_average_precision": 0.05,
+        "coverage_rate": 1.0
+      }
+    },
+    "selfindex_best_latency": 0.6389021873474121,
+    "selfindex_best_throughput": 8726.526675521844,
+    "selfindex_best_memory": 29.952776022605352,
+    "selfindex_best_functional": 0.43003663003663
+  }
+}

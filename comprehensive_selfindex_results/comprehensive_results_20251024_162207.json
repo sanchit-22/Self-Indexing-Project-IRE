@@ -1,0 +1,902 @@
+{
+  "SelfIndex_001_BOOL_CUST_NONE_Null_TERM": {
+    "config": {
+      "name": "SelfIndex_001_BOOL_CUST_NONE_Null_TERM",
+      "config_id": 1,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "NONE",
+      "query_proc": "TERMatat",
+      "optimization": "Null",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "i": 0,
+      "q": "T"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.3940408880060369,
+        "p50": 0.3075599670410156,
+        "p90": 0.6061553955078127,
+        "p95": 1.2700319290161135,
+        "p99": 1.4891767501831055,
+        "min": 0.05054473876953125,
+        "max": 1.4951229095458984,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.25728344917297363,
+            "p95": 0.3392577171325683
+          },
+          "multi_term": {
+            "mean": 0.5106131235758463,
+            "p95": 0.5972385406494141
+          },
+          "phrase_queries": {
+            "mean": 0.41933854420979816,
+            "p95": 0.5306601524353027
+          },
+          "long_queries": {
+            "mean": 1.3484954833984375,
+            "p95": 1.4930486679077148
+          },
+          "rare_terms": {
+            "mean": 0.11873245239257812,
+            "p95": 0.17279386520385742
+          },
+          "common_terms": {
+            "mean": 0.32381216684977215,
+            "p95": 0.42635202407836914
+          },
+          "boolean_queries": {
+            "mean": 0.29501914978027344,
+            "p95": 0.4873275756835937
+          },
+          "empty_no_results": {
+            "mean": 0.058492024739583336,
+            "p95": 0.06704330444335938
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 3533.1769189244324,
+        "multi_thread_qps": 2478.7565746705277,
+        "speedup_factor": 0.7015659367052328,
+        "single_thread_queries": 52998,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 75.65234375,
+        "index_size_mb": 6.677179336547852,
+        "process_memory_mb": 396.125,
+        "memory_efficiency_docs_per_mb": 29.952767466539456,
+        "peak_memory_mb": 396.125,
+        "memory_growth_mb": 75.65234375
+      },
+      "functional": {
+        "mean_average_precision": 0.3333333333333333,
+        "mean_recall": 0.6111111111111112,
+        "mean_f1_score": 0.38241758241758245,
+        "mean_ndcg": 0.4388044962455324,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 6.888141632080078,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c1qT0"
+  },
+  "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa": {
+    "config": {
+      "name": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
+      "config_id": 2,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "NONE",
+      "query_proc": "DOCatat",
+      "optimization": "Null",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "i": 0,
+      "q": "D"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.42426586151123047,
+        "p50": 0.39124488830566406,
+        "p90": 0.7424116134643555,
+        "p95": 1.054513454437256,
+        "p99": 1.2597918510437012,
+        "min": 0.047206878662109375,
+        "max": 1.3043880462646484,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.33780932426452637,
+            "p95": 0.4608869552612304
+          },
+          "multi_term": {
+            "mean": 0.5653699239095052,
+            "p95": 0.897526741027832
+          },
+          "phrase_queries": {
+            "mean": 0.49046675364176434,
+            "p95": 0.6844401359558105
+          },
+          "long_queries": {
+            "mean": 1.0031461715698242,
+            "p95": 1.2888312339782715
+          },
+          "rare_terms": {
+            "mean": 0.11924902598063152,
+            "p95": 0.1742243766784668
+          },
+          "common_terms": {
+            "mean": 0.47405560811360675,
+            "p95": 0.6732940673828125
+          },
+          "boolean_queries": {
+            "mean": 0.3815174102783203,
+            "p95": 0.6731986999511719
+          },
+          "empty_no_results": {
+            "mean": 0.050067901611328125,
+            "p95": 0.0522613525390625
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 2810.434861157399,
+        "multi_thread_qps": 2471.555600077783,
+        "speedup_factor": 0.8794210583695726,
+        "single_thread_queries": 42157,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 75.4375,
+        "index_size_mb": 6.677177429199219,
+        "process_memory_mb": 426.26171875,
+        "memory_efficiency_docs_per_mb": 29.952776022605352,
+        "peak_memory_mb": 426.26171875,
+        "memory_growth_mb": 75.4375
+      },
+      "functional": {
+        "mean_average_precision": 0.36666666666666664,
+        "mean_recall": 0.6944444444444444,
+        "mean_f1_score": 0.43003663003663,
+        "mean_ndcg": 0.5013274532710763,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 7.27043604850769,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c1qD0"
+  },
+  "SelfIndex_003_BOOL_CUST_NONE_Skip_TERM": {
+    "config": {
+      "name": "SelfIndex_003_BOOL_CUST_NONE_Skip_TERM",
+      "config_id": 3,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "NONE",
+      "query_proc": "TERMatat",
+      "optimization": "Skipping",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "i": 1,
+      "q": "T"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.4083243283358487,
+        "p50": 0.30863285064697266,
+        "p90": 0.6232023239135744,
+        "p95": 1.3421058654785158,
+        "p99": 1.6612792015075684,
+        "min": 0.05125999450683594,
+        "max": 1.6779899597167969,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.254899263381958,
+            "p95": 0.32132863998413086
+          },
+          "multi_term": {
+            "mean": 0.5387465159098307,
+            "p95": 0.616908073425293
+          },
+          "phrase_queries": {
+            "mean": 0.42569637298583984,
+            "p95": 0.5415081977844238
+          },
+          "long_queries": {
+            "mean": 1.4647841453552246,
+            "p95": 1.6721606254577637
+          },
+          "rare_terms": {
+            "mean": 0.1203616460164388,
+            "p95": 0.1735091209411621
+          },
+          "common_terms": {
+            "mean": 0.3217061360677083,
+            "p95": 0.43642520904541016
+          },
+          "boolean_queries": {
+            "mean": 0.2913951873779297,
+            "p95": 0.45733451843261713
+          },
+          "empty_no_results": {
+            "mean": 0.05729993184407552,
+            "p95": 0.06279945373535156
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 3492.5202324744087,
+        "multi_thread_qps": 3284.3051504414384,
+        "speedup_factor": 0.9403825695562392,
+        "single_thread_queries": 52388,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 69.125,
+        "index_size_mb": 6.855661392211914,
+        "process_memory_mb": 426.15234375,
+        "memory_efficiency_docs_per_mb": 29.172969398284692,
+        "peak_memory_mb": 426.15234375,
+        "memory_growth_mb": 69.125
+      },
+      "functional": {
+        "mean_average_precision": 0.3333333333333333,
+        "mean_recall": 0.6111111111111112,
+        "mean_f1_score": 0.38241758241758245,
+        "mean_ndcg": 0.4388044962455324,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 7.025373935699463,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c1qTSp"
+  },
+  "SelfIndex_004_BOOL_CUST_NONE_Skip_DOCa": {
+    "config": {
+      "name": "SelfIndex_004_BOOL_CUST_NONE_Skip_DOCa",
+      "config_id": 4,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "NONE",
+      "query_proc": "DOCatat",
+      "optimization": "Skipping",
+      "x": 1,
+      "y": 1,
+      "z": 1,
+      "i": 1,
+      "q": "D"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.43015588413585315,
+        "p50": 0.3985166549682617,
+        "p90": 0.762319564819336,
+        "p95": 1.1094689369201662,
+        "p99": 1.2538933753967285,
+        "min": 0.0476837158203125,
+        "max": 1.310586929321289,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.3509819507598877,
+            "p95": 0.48118829727172846
+          },
+          "multi_term": {
+            "mean": 0.554203987121582,
+            "p95": 0.8596181869506836
+          },
+          "phrase_queries": {
+            "mean": 0.5000432332356771,
+            "p95": 0.6806850433349609
+          },
+          "long_queries": {
+            "mean": 1.0184049606323242,
+            "p95": 1.2908101081848145
+          },
+          "rare_terms": {
+            "mean": 0.11869271596272786,
+            "p95": 0.17595291137695312
+          },
+          "common_terms": {
+            "mean": 0.48549969991048175,
+            "p95": 0.6759762763977051
+          },
+          "boolean_queries": {
+            "mean": 0.3887176513671875,
+            "p95": 0.6994247436523436
+          },
+          "empty_no_results": {
+            "mean": 0.05038579305013021,
+            "p95": 0.05269050598144531
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 2864.77832561361,
+        "multi_thread_qps": 2435.221644845705,
+        "speedup_factor": 0.8500558745061374,
+        "single_thread_queries": 42972,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 69.53515625,
+        "index_size_mb": 6.855660438537598,
+        "process_memory_mb": 425.98828125,
+        "memory_efficiency_docs_per_mb": 29.172973456465797,
+        "peak_memory_mb": 425.98828125,
+        "memory_growth_mb": 69.53515625
+      },
+      "functional": {
+        "mean_average_precision": 0.36666666666666664,
+        "mean_recall": 0.6944444444444444,
+        "mean_f1_score": 0.43003663003663,
+        "mean_ndcg": 0.5013274532710763,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 6.923270225524902,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c1qDSp"
+  },
+  "SelfIndex_005_BOOL_CUST_CODE_Null_TERM": {
+    "config": {
+      "name": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
+      "config_id": 5,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "CODE",
+      "query_proc": "TERMatat",
+      "optimization": "Null",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "i": 0,
+      "q": "T"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.1817887479608709,
+        "p50": 0.10645389556884766,
+        "p90": 0.33445358276367226,
+        "p95": 0.6389021873474121,
+        "p99": 0.7059574127197266,
+        "min": 0.04696846008300781,
+        "max": 0.7162094116210938,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.09766221046447754,
+            "p95": 0.10699033737182617
+          },
+          "multi_term": {
+            "mean": 0.2460479736328125,
+            "p95": 0.3409385681152344
+          },
+          "phrase_queries": {
+            "mean": 0.18556912740071616,
+            "p95": 0.20772218704223633
+          },
+          "long_queries": {
+            "mean": 0.6676316261291504,
+            "p95": 0.7126331329345703
+          },
+          "rare_terms": {
+            "mean": 0.07013479868570964,
+            "p95": 0.08040666580200195
+          },
+          "common_terms": {
+            "mean": 0.10939439137776692,
+            "p95": 0.16170740127563477
+          },
+          "boolean_queries": {
+            "mean": 0.146484375,
+            "p95": 0.21257400512695312
+          },
+          "empty_no_results": {
+            "mean": 0.0491937001546224,
+            "p95": 0.05049705505371094
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 8726.526675521844,
+        "multi_thread_qps": 7248.555232960044,
+        "speedup_factor": 0.8306346273245745,
+        "single_thread_queries": 130898,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 105.25,
+        "index_size_mb": 8.421364784240723,
+        "process_memory_mb": 469.08203125,
+        "memory_efficiency_docs_per_mb": 23.749119664578473,
+        "peak_memory_mb": 469.08203125,
+        "memory_growth_mb": 105.25
+      },
+      "functional": {
+        "mean_average_precision": 0.0,
+        "mean_recall": 0.0,
+        "mean_f1_score": 0,
+        "mean_ndcg": 0.0,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 7.136896133422852,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c2qT0"
+  },
+  "SelfIndex_006_BOOL_CUST_CODE_Null_DOCa": {
+    "config": {
+      "name": "SelfIndex_006_BOOL_CUST_CODE_Null_DOCa",
+      "config_id": 6,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "CODE",
+      "query_proc": "DOCatat",
+      "optimization": "Null",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "i": 0,
+      "q": "D"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.35701556639237836,
+        "p50": 0.3132820129394531,
+        "p90": 0.6741762161254884,
+        "p95": 0.9190797805786135,
+        "p99": 1.1280512809753418,
+        "min": 0.047206878662109375,
+        "max": 1.1820793151855469,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.27230381965637207,
+            "p95": 0.3923535346984863
+          },
+          "multi_term": {
+            "mean": 0.4477103551228841,
+            "p95": 0.6948709487915039
+          },
+          "phrase_queries": {
+            "mean": 0.4146893819173177,
+            "p95": 0.6192326545715332
+          },
+          "long_queries": {
+            "mean": 0.9241104125976562,
+            "p95": 1.1632323265075684
+          },
+          "rare_terms": {
+            "mean": 0.11650721232096355,
+            "p95": 0.16772747039794922
+          },
+          "common_terms": {
+            "mean": 0.3542900085449219,
+            "p95": 0.4494786262512207
+          },
+          "boolean_queries": {
+            "mean": 0.33817291259765625,
+            "p95": 0.5894660949707031
+          },
+          "empty_no_results": {
+            "mean": 0.04792213439941406,
+            "p95": 0.04894733428955078
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 3442.059335518663,
+        "multi_thread_qps": 3119.137354056667,
+        "speedup_factor": 0.9061834936632965,
+        "single_thread_queries": 51631,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 83.65234375,
+        "index_size_mb": 8.421364784240723,
+        "process_memory_mb": 468.9375,
+        "memory_efficiency_docs_per_mb": 23.749119664578473,
+        "peak_memory_mb": 468.9375,
+        "memory_growth_mb": 83.65234375
+      },
+      "functional": {
+        "mean_average_precision": 0.0,
+        "mean_recall": 0.0,
+        "mean_f1_score": 0,
+        "mean_ndcg": 0.0,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 7.232592344284058,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c2qD0"
+  },
+  "SelfIndex_007_BOOL_CUST_CODE_Skip_TERM": {
+    "config": {
+      "name": "SelfIndex_007_BOOL_CUST_CODE_Skip_TERM",
+      "config_id": 7,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "CODE",
+      "query_proc": "TERMatat",
+      "optimization": "Skipping",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "i": 1,
+      "q": "T"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.1973347230391069,
+        "p50": 0.10645389556884766,
+        "p90": 0.5106449127197277,
+        "p95": 0.6858944892883302,
+        "p99": 0.8738422393798829,
+        "min": 0.04839897155761719,
+        "max": 0.9853839874267578,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.09679794311523438,
+            "p95": 0.10706186294555664
+          },
+          "multi_term": {
+            "mean": 0.34348169962565106,
+            "p95": 0.7976889610290527
+          },
+          "phrase_queries": {
+            "mean": 0.1930395762125651,
+            "p95": 0.21338462829589844
+          },
+          "long_queries": {
+            "mean": 0.672459602355957,
+            "p95": 0.7211565971374512
+          },
+          "rare_terms": {
+            "mean": 0.07192293802897136,
+            "p95": 0.08296966552734375
+          },
+          "common_terms": {
+            "mean": 0.11086463928222656,
+            "p95": 0.1614093780517578
+          },
+          "boolean_queries": {
+            "mean": 0.15087127685546875,
+            "p95": 0.2151012420654297
+          },
+          "empty_no_results": {
+            "mean": 0.04943211873372396,
+            "p95": 0.05061626434326172
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 8707.860299911916,
+        "multi_thread_qps": 7217.310653967598,
+        "speedup_factor": 0.8288271062456761,
+        "single_thread_queries": 130618,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 93.5,
+        "index_size_mb": 8.421369552612305,
+        "process_memory_mb": 469.3515625,
+        "memory_efficiency_docs_per_mb": 23.74910621728506,
+        "peak_memory_mb": 469.3515625,
+        "memory_growth_mb": 93.5
+      },
+      "functional": {
+        "mean_average_precision": 0.0,
+        "mean_recall": 0.0,
+        "mean_f1_score": 0,
+        "mean_ndcg": 0.0,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 7.261875629425049,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c2qTSp"
+  },
+  "SelfIndex_008_BOOL_CUST_CODE_Skip_DOCa": {
+    "config": {
+      "name": "SelfIndex_008_BOOL_CUST_CODE_Skip_DOCa",
+      "config_id": 8,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "CODE",
+      "query_proc": "DOCatat",
+      "optimization": "Skipping",
+      "x": 1,
+      "y": 1,
+      "z": 2,
+      "i": 1,
+      "q": "D"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.3711527044122869,
+        "p50": 0.31936168670654297,
+        "p90": 0.7651567459106448,
+        "p95": 1.0336637496948244,
+        "p99": 1.129746437072754,
+        "min": 0.04863739013671875,
+        "max": 1.1861324310302734,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.34752488136291504,
+            "p95": 0.797033309936523
+          },
+          "multi_term": {
+            "mean": 0.45669078826904297,
+            "p95": 0.7002949714660645
+          },
+          "phrase_queries": {
+            "mean": 0.4197359085083008,
+            "p95": 0.635981559753418
+          },
+          "long_queries": {
+            "mean": 0.9198188781738281,
+            "p95": 1.1664628982543945
+          },
+          "rare_terms": {
+            "mean": 0.11392434438069661,
+            "p95": 0.16307830810546875
+          },
+          "common_terms": {
+            "mean": 0.34538904825846356,
+            "p95": 0.4379153251647949
+          },
+          "boolean_queries": {
+            "mean": 0.34046173095703125,
+            "p95": 0.5911350250244141
+          },
+          "empty_no_results": {
+            "mean": 0.0514984130859375,
+            "p95": 0.054264068603515625
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 3537.450642181507,
+        "multi_thread_qps": 2206.2859337110153,
+        "speedup_factor": 0.623693771837456,
+        "single_thread_queries": 53062,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 82.27734375,
+        "index_size_mb": 8.421368598937988,
+        "process_memory_mb": 469.43359375,
+        "memory_efficiency_docs_per_mb": 23.749108906742524,
+        "peak_memory_mb": 469.43359375,
+        "memory_growth_mb": 82.27734375
+      },
+      "functional": {
+        "mean_average_precision": 0.0,
+        "mean_recall": 0.0,
+        "mean_f1_score": 0,
+        "mean_ndcg": 0.0,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 7.1483588218688965,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c2qDSp"
+  },
+  "SelfIndex_009_BOOL_CUST_CLIB_Null_TERM": {
+    "config": {
+      "name": "SelfIndex_009_BOOL_CUST_CLIB_Null_TERM",
+      "config_id": 9,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "CLIB",
+      "query_proc": "TERMatat",
+      "optimization": "Null",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "i": 0,
+      "q": "T"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.519606200131503,
+        "p50": 0.37992000579833984,
+        "p90": 0.8675336837768558,
+        "p95": 1.8670320510864262,
+        "p99": 2.0694613456726074,
+        "min": 0.05364418029785156,
+        "max": 2.1653175354003906,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.30675530433654785,
+            "p95": 0.4007220268249511
+          },
+          "multi_term": {
+            "mean": 0.6741682688395182,
+            "p95": 0.8578896522521973
+          },
+          "phrase_queries": {
+            "mean": 0.5439519882202148,
+            "p95": 0.7257461547851562
+          },
+          "long_queries": {
+            "mean": 1.9139647483825684,
+            "p95": 2.1318793296813965
+          },
+          "rare_terms": {
+            "mean": 0.13212362925211588,
+            "p95": 0.1901388168334961
+          },
+          "common_terms": {
+            "mean": 0.3916819890340169,
+            "p95": 0.5061626434326172
+          },
+          "boolean_queries": {
+            "mean": 0.4258155822753906,
+            "p95": 0.6548881530761719
+          },
+          "empty_no_results": {
+            "mean": 0.05737940470377604,
+            "p95": 0.062203407287597656
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 2697.9042164331604,
+        "multi_thread_qps": 2173.220137876005,
+        "speedup_factor": 0.8055216062300282,
+        "single_thread_queries": 40469,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 32.625,
+        "index_size_mb": 7.119653701782227,
+        "process_memory_mb": 415.4609375,
+        "memory_efficiency_docs_per_mb": 28.091253925726054,
+        "peak_memory_mb": 415.4609375,
+        "memory_growth_mb": 32.625
+      },
+      "functional": {
+        "mean_average_precision": 0.3333333333333333,
+        "mean_recall": 0.6111111111111112,
+        "mean_f1_score": 0.38241758241758245,
+        "mean_ndcg": 0.4388044962455324,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 7.410445928573608,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c3qT0"
+  },
+  "SelfIndex_010_BOOL_CUST_CLIB_Null_DOCa": {
+    "config": {
+      "name": "SelfIndex_010_BOOL_CUST_CLIB_Null_DOCa",
+      "config_id": 10,
+      "index_type": "BOOLEAN",
+      "datastore": "CUSTOM",
+      "compression": "CLIB",
+      "query_proc": "DOCatat",
+      "optimization": "Null",
+      "x": 1,
+      "y": 1,
+      "z": 3,
+      "i": 0,
+      "q": "D"
+    },
+    "metrics": {
+      "latency": {
+        "mean": 0.5675771019675515,
+        "p50": 0.504612922668457,
+        "p90": 1.036977767944336,
+        "p95": 1.5753388404846198,
+        "p99": 1.9711709022521973,
+        "min": 0.050067901611328125,
+        "max": 2.0856857299804688,
+        "total_queries": 44,
+        "successful_queries": 44,
+        "category_breakdown": {
+          "single_term": {
+            "mean": 0.40072202682495117,
+            "p95": 0.5579590797424316
+          },
+          "multi_term": {
+            "mean": 0.7372697194417318,
+            "p95": 1.0851621627807617
+          },
+          "phrase_queries": {
+            "mean": 0.6257295608520508,
+            "p95": 0.9072422981262207
+          },
+          "long_queries": {
+            "mean": 1.6418099403381348,
+            "p95": 2.045738697052002
+          },
+          "rare_terms": {
+            "mean": 0.1320044199625651,
+            "p95": 0.19925832748413086
+          },
+          "common_terms": {
+            "mean": 0.5550384521484375,
+            "p95": 0.7666349411010742
+          },
+          "boolean_queries": {
+            "mean": 0.5484104156494141,
+            "p95": 0.9481430053710936
+          },
+          "empty_no_results": {
+            "mean": 0.05269050598144531,
+            "p95": 0.05466938018798828
+          }
+        }
+      },
+      "throughput": {
+        "single_thread_qps": 2290.2351422686065,
+        "multi_thread_qps": 1146.1898235886476,
+        "speedup_factor": 0.5004681844385998,
+        "single_thread_queries": 34354,
+        "multi_thread_queries": 200,
+        "test_duration": 15
+      },
+      "memory": {
+        "index_creation_memory_mb": 22.8046875,
+        "index_size_mb": 7.119653701782227,
+        "process_memory_mb": 415.49609375,
+        "memory_efficiency_docs_per_mb": 28.091253925726054,
+        "peak_memory_mb": 415.49609375,
+        "memory_growth_mb": 22.8046875
+      },
+      "functional": {
+        "mean_average_precision": 0.36666666666666664,
+        "mean_recall": 0.6944444444444444,
+        "mean_f1_score": 0.43003663003663,
+        "mean_ndcg": 0.5013274532710763,
+        "coverage_rate": 1.0,
+        "total_test_queries": 3,
+        "successful_queries": 3
+      }
+    },
+    "index_time": 7.444244623184204,
+    "index_path": "/home/san22chit/Documents/IIITH/Sem3/IRE/Assignments/IndexingAndRetrieval/indexes/SelfIndex_i1d1c3qD0"
+  }
+}
