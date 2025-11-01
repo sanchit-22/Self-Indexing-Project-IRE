@@ -37,44 +37,47 @@ class OptimizedSelfIndexEvaluator:
         }
         
     def load_test_data_once(self, max_docs=50000):
-        """Load test dataset ONCE and cache it for all configurations"""
+        """Load preprocessed dataset from CSV and cache it for all configurations"""
         if self.cached_test_data is not None:
             print(f"✅ Using cached dataset with {len(self.cached_test_data)} documents")
             return self.cached_test_data
-        
-        print(f"📁 Loading dataset ONCE for all 108 configurations ({max_docs} documents)...")
-        
-        try:
-            # Use your existing dataset from Ass1.ipynb
-            cache_path = Path("local_wikipedia_data")
-            if cache_path.exists():
-                ds = load_dataset("wikimedia/wikipedia", "20231101.en", cache_dir=cache_path, split="train")
-            else:
-                ds = load_dataset("wikimedia/wikipedia", "20231101.en", split="train")
-            
-            documents = []
-            
-            print(f"🔄 Processing {max_docs} documents...")
-            for idx, item in enumerate(tqdm(ds, desc="Loading documents ONCE", total=max_docs)):
-                if idx >= max_docs:
-                    break
-                
-                doc_id = str(item['id'])
-                content = item['text']
-                documents.append((doc_id, content))
-            
-            self.cached_test_data = documents
-            print(f"✅ Loaded and CACHED {len(documents)} documents for all configurations")
-            
-        except Exception as e:
-            print(f"❌ Error loading dataset: {e}")
-            # Create sample data as fallback
-            self.cached_test_data = [
-                (f"doc_{i}", f"Sample document {i} content with political philosophy anarchism government society technology artificial intelligence machine learning research science computer")
-                for i in range(max_docs)
-            ]
-            print(f"✅ Created {len(self.cached_test_data)} sample documents")
-        
+
+        import pandas as pd
+        csv_path = Path("dataset/preprocessed_dataset.csv")
+        assert csv_path.exists(), f"CSV not found: {csv_path}"
+        print(f"📁 Loading preprocessed dataset from {csv_path} ...")
+        df = pd.read_csv(csv_path)
+        if max_docs:
+            df = df.head(max_docs)
+
+        # Each row: id, original_text, processed_tokens, title, token_count
+        # processed_tokens is a string representation of a list, e.g. "['word1', 'word2', ...]"
+
+        def parse_tokens(tok_str):
+            """Parse tokens from space-separated string format (as saved in CSV)"""
+            try:
+                if isinstance(tok_str, str) and tok_str.strip():
+                    # Split on whitespace to get list of tokens
+                    tokens = tok_str.strip().split()
+                    return [token for token in tokens if token]  # Remove empty tokens
+                return []
+            except Exception:
+                return []
+
+
+        documents = []
+        for _, row in tqdm(df.iterrows(), total=len(df), desc="Loading preprocessed docs"):
+            doc_id = str(row['id'])
+            tokens = parse_tokens(row['processed_tokens'])
+            content = str(row['original_text'])
+            documents.append((doc_id, tokens, content))
+
+        # Debug: print a sample to verify tokens are parsed correctly
+        if documents:
+            print("Sample doc tokens:", documents[0][1][:10], "Type:", type(documents[0][1]))
+
+        self.cached_test_data = documents
+        print(f"✅ Loaded and CACHED {len(documents)} preprocessed documents for all configurations")
         return self.cached_test_data
     
     def generate_comprehensive_query_set_once(self):
@@ -168,14 +171,14 @@ class OptimizedSelfIndexEvaluator:
         """Generate all 108 possible SelfIndex configurations"""
         
         index_types = ['BOOLEAN', 'WORDCOUNT', 'TFIDF']  # x=1,2,3
-        datastores = ['CUSTOM', 'DB1', 'DB2']             # y=1,2,3  
+        datastores = ['CUSTOM', 'DB1']             # y=1,2,3  
         compressions = ['NONE', 'CODE', 'CLIB']           # z=1,2,3
         optimizations = ['Null', 'Skipping']              # i=0,1
         query_procs = ['TERMatat', 'DOCatat']             # q=T,D
         
         configurations = []
         
-        print(f"🔧 Generating ALL 108 possible configurations...")
+        print(f"🔧 Generating ALL 72 possible configurations...")
         
         total_combinations = len(index_types) * len(datastores) * len(compressions) * len(optimizations) * len(query_procs)
         print(f"   📊 Total combinations: {total_combinations}")
@@ -290,7 +293,7 @@ class OptimizedSelfIndexEvaluator:
             query_proc=config['query_proc'],
             optimization=config['optimization']
         )
-        
+
         result = {
             'config': config,
             'metrics': {
@@ -300,29 +303,31 @@ class OptimizedSelfIndexEvaluator:
                 'functional': {}
             }
         }
-        
+
         try:
             # === INDEXING PHASE ===
             process = psutil.Process()
             mem_before = process.memory_info().rss / (1024 * 1024)
-            
+
             index_id = f"eval_{config['config_id']}"
             start_time = time.time()
-            indexer.create_index(index_id, test_data)
+            # test_data: (doc_id, tokens, content)
+            # Pass tokens directly to SelfIndex
+            indexer.create_index(index_id, [(doc_id, tokens, content) for doc_id, tokens, content in test_data], pretokenized=True)
             index_time = time.time() - start_time
-            
+
             mem_after = process.memory_info().rss / (1024 * 1024)
             memory_usage = mem_after - mem_before
-            
+
             # Estimate index size
             index_size = self._estimate_index_size(indexer, index_id)
-            
+
             # === METRIC A: COMPREHENSIVE LATENCY MEASUREMENT ===
             latency_metrics = self._measure_latency_comprehensive(indexer, query_set)
-            
+
             # === METRIC B: COMPREHENSIVE THROUGHPUT MEASUREMENT ===
             throughput_metrics = self._measure_throughput_comprehensive(indexer, query_set)
-            
+
             # === METRIC C: COMPREHENSIVE MEMORY MEASUREMENT ===
             memory_metrics = {
                 'index_creation_memory_mb': memory_usage,
@@ -332,10 +337,10 @@ class OptimizedSelfIndexEvaluator:
                 'peak_memory_mb': mem_after,
                 'memory_growth_mb': memory_usage
             }
-            
+
             # === METRIC D: COMPREHENSIVE FUNCTIONAL MEASUREMENT ===
             functional_metrics = self._measure_functional_comprehensive(indexer, query_set)
-            
+
             # Store index in 'indexes/' with required naming policy
             # Naming: SelfIndex_iXdYcZqQO
             x = config['x']

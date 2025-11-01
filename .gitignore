@@ -6,3 +6,5 @@ __pycache__/
 indices/
 myenv/
 dataset/
+src/Dataset/PreProcessedData
+src/SelfIndex/Indexes

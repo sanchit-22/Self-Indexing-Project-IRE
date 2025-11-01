@@ -11,7 +11,7 @@ def run_quick_test():
     print("="*40)
     
     evaluator = OptimizedSelfIndexEvaluator()
-    results = evaluator.run_comprehensive_evaluation(max_configs=10, sample_size=200)
+    results = evaluator.run_comprehensive_evaluation(max_configs=72, sample_size=100)
     print(f"✅ Quick test complete: {len(results)} configurations tested")
 
 def run_medium_test():
@@ -31,7 +31,7 @@ def run_full_evaluation():
     print("   Data will be loaded ONCE and reused for all 108 configurations")
     
     evaluator = OptimizedSelfIndexEvaluator()
-    results = evaluator.run_comprehensive_evaluation(max_configs=108, sample_size=50000)
+    results = evaluator.run_comprehensive_evaluation(max_configs=72, sample_size=50000)
     print(f"🎉 FULL evaluation complete: {len(results)} configurations tested")
 
 if __name__ == "__main__":
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             print("Usage: python run_selfindex_evaluation.py [quick|medium|full]")
             print("")
             print("Options:")
-            print("  quick  - 10 configs, 1000 docs (~10 min)")
+            print("  quick  - 72 configs, 200 docs (~10 min)")
             print("  medium - 50 configs, 10000 docs (~1 hour)")
             print("  full   - 108 configs, 50000 docs (~3-4 hours)")
     else:

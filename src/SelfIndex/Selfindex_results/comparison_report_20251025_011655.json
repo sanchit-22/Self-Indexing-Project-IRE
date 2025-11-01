@@ -1,77 +1,77 @@
 {
   "evaluation_summary": {
-    "total_configurations": 10,
-    "successful_tests": 10,
+    "total_configurations": 72,
+    "successful_tests": 72,
     "failed_tests": 0,
     "success_rate": 100.0
   },
   "best_performers": {
     "latency": {
-      "config": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
-      "value": 0.6389021873474121,
+      "config": "SelfIndex_019_BOOL_DB1_CODE_Skip_TERM",
+      "value": 32.42663145065308,
       "config_details": {
-        "name": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
-        "config_id": 5,
+        "name": "SelfIndex_019_BOOL_DB1_CODE_Skip_TERM",
+        "config_id": 19,
         "index_type": "BOOLEAN",
-        "datastore": "CUSTOM",
+        "datastore": "DB1",
         "compression": "CODE",
         "query_proc": "TERMatat",
-        "optimization": "Null",
+        "optimization": "Skipping",
         "x": 1,
-        "y": 1,
+        "y": 2,
         "z": 2,
-        "i": 0,
+        "i": 1,
         "q": "T"
       }
     },
     "throughput": {
-      "config": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
-      "value": 8726.526675521844,
+      "config": "SelfIndex_017_BOOL_DB1_CODE_Null_TERM",
+      "value": 301.1155577471817,
       "config_details": {
-        "name": "SelfIndex_005_BOOL_CUST_CODE_Null_TERM",
-        "config_id": 5,
+        "name": "SelfIndex_017_BOOL_DB1_CODE_Null_TERM",
+        "config_id": 17,
         "index_type": "BOOLEAN",
-        "datastore": "CUSTOM",
+        "datastore": "DB1",
         "compression": "CODE",
         "query_proc": "TERMatat",
         "optimization": "Null",
         "x": 1,
-        "y": 1,
+        "y": 2,
         "z": 2,
         "i": 0,
         "q": "T"
       }
     },
     "memory": {
-      "config": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
-      "value": 29.952776022605352,
+      "config": "SelfIndex_010_BOOL_CUST_CLIB_Null_DOCa",
+      "value": 219.63795338036473,
       "config_details": {
-        "name": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
-        "config_id": 2,
+        "name": "SelfIndex_010_BOOL_CUST_CLIB_Null_DOCa",
+        "config_id": 10,
         "index_type": "BOOLEAN",
         "datastore": "CUSTOM",
-        "compression": "NONE",
+        "compression": "CLIB",
         "query_proc": "DOCatat",
         "optimization": "Null",
         "x": 1,
         "y": 1,
-        "z": 1,
+        "z": 3,
         "i": 0,
         "q": "D"
       }
     },
     "functional": {
-      "config": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
-      "value": 0.43003663003663,
+      "config": "SelfIndex_026_WORD_CUST_NONE_Null_DOCa",
+      "value": 0.7948717948717947,
       "config_details": {
-        "name": "SelfIndex_002_BOOL_CUST_NONE_Null_DOCa",
-        "config_id": 2,
-        "index_type": "BOOLEAN",
+        "name": "SelfIndex_026_WORD_CUST_NONE_Null_DOCa",
+        "config_id": 26,
+        "index_type": "WORDCOUNT",
         "datastore": "CUSTOM",
         "compression": "NONE",
         "query_proc": "DOCatat",
         "optimization": "Null",
-        "x": 1,
+        "x": 2,
         "y": 1,
         "z": 1,
         "i": 0,
@@ -99,9 +99,9 @@
         "coverage_rate": 1.0
       }
     },
-    "selfindex_best_latency": 0.6389021873474121,
-    "selfindex_best_throughput": 8726.526675521844,
-    "selfindex_best_memory": 29.952776022605352,
-    "selfindex_best_functional": 0.43003663003663
+    "selfindex_best_latency": 32.42663145065308,
+    "selfindex_best_throughput": 301.1155577471817,
+    "selfindex_best_memory": 219.63795338036473,
+    "selfindex_best_functional": 0.7948717948717947
   }
 }

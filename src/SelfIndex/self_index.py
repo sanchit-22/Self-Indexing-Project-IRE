@@ -136,74 +136,66 @@ class SelfIndex(IndexBase):
             words = text.lower().translate(self.punct_table).split()
             return [w for w in words if w.isalpha() and w not in self.stop_words]
     
-    def create_index(self, index_id: str, files: Iterable[tuple[str, str]]) -> None:
-        """Creates comprehensive index with all specified variants"""
-        
+    def create_index(self, index_id: str, files: Iterable, pretokenized: bool = False) -> None:
+        """Creates comprehensive index with all specified variants. If pretokenized=True, expects (doc_id, tokens, content)."""
         print(f"🚀 Creating SelfIndex: {index_id}")
         print(f"📋 Configuration: {self.identifier_long}")
-        
+
         if self._index_exists(index_id):
             print(f"⚠️  Index {index_id} already exists, loading existing...")
             self.load_index(index_id)
             return
-        
-        # Convert files to list for multiple passes
+
         file_list = list(files)
-        
-        # Build inverted index
+
         inverted_index = defaultdict(list)
         doc_info = {}
         doc_count = 0
         total_tokens = 0
         term_doc_frequencies = defaultdict(int)
-        
+
         print(f"📖 Processing {len(file_list)} documents for {self.index_type} index...")
-        
-        for doc_id, content in file_list:
-            # Preprocess text
-            tokens = self._preprocess_text(content)
+
+        for item in file_list:
+            if pretokenized:
+                doc_id, tokens, content = item
+            else:
+                doc_id, content = item
+                tokens = self._preprocess_text(content)
             doc_length = len(tokens)
             total_tokens += doc_length
-            
-            # Store document info
+
             doc_info[doc_id] = {
                 'length': doc_length,
                 'title': doc_id,
                 'content': content[:500] if len(content) > 500 else content
             }
-            
-            # Build term postings
+
             term_positions = defaultdict(list)
             term_frequencies = defaultdict(int)
-            
+
             for pos, term in enumerate(tokens):
                 term_positions[term].append(pos)
                 term_frequencies[term] += 1
-            
-            # Track document frequency for each term
+
             for term in term_positions.keys():
                 term_doc_frequencies[term] += 1
-            
-            # Add to inverted index based on index type
+
             for term, positions in term_positions.items():
                 tf = term_frequencies[term]
-                
                 posting = {
                     'doc_id': doc_id,
                     'positions': positions,
                     'doc_length': doc_length
                 }
-                
                 if self.index_type in ['WORDCOUNT', 'TFIDF']:
                     posting['tf'] = tf
-                
                 inverted_index[term].append(posting)
-            
+
             doc_count += 1
-            
-            if doc_count % 100 == 0:
+            if doc_count % 1000 == 0:
                 print(f"📊 Processed {doc_count} documents...")
-        
+
         print(f"✅ Processed {doc_count} documents, {len(inverted_index)} unique terms")
         
         # Calculate TF-IDF scores if needed
@@ -886,7 +878,20 @@ class SelfIndex(IndexBase):
         if self.datastore == 'CUSTOM':
             return (self.data_dir / index_id).exists()
         elif self.datastore == 'DB1':
-            return self.db_path.exists()
+            if not self.db_path.exists():
+                return False
+            import sqlite3
+            try:
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT 1 FROM index_metadata WHERE index_id = ?
+                """, (index_id,))
+                exists = cursor.fetchone() is not None
+                conn.close()
+                return exists
+            except Exception:
+                return False
         elif self.datastore == 'DB2':
             return self.json_db_path.exists()
         return False

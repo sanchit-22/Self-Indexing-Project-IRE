@@ -1,0 +1,8 @@
+🚀 RUNNING FULL EVALUATION - ALL 108 CONFIGURATIONS
+============================================================
+⚠️  This will take 3-4 hours with 50,000 documents!
+   Data will be loaded ONCE and reused for all 108 configurations
+🚀 COMPREHENSIVE SELFINDEX EVALUATION - SINGLE DATA LOAD
+================================================================================
+📁 Step 1: Loading test data ONCE for ALL configurations...
+📁 Loading preprocessed dataset from dataset/preprocessed_dataset.csv ...
