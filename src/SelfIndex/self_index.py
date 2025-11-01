@@ -30,6 +30,63 @@ try:
 except:
     pass
 
+class InvertedListPointer:
+    """Helper class to manage pointers into inverted lists for efficient traversal"""
+    
+    def __init__(self, term: str, postings: List[Dict]):
+        self.term = term
+        self.postings = sorted(postings, key=lambda x: x['doc_id'])  # Ensure sorted by doc_id
+        self.position = 0
+        self.finished = len(postings) == 0
+    
+    def get_current_document(self) -> str:
+        """Get the current document ID"""
+        if self.finished or self.position >= len(self.postings):
+            return None
+        return self.postings[self.position]['doc_id']
+    
+    def get_current_posting(self) -> Dict:
+        """Get the current posting"""
+        if self.finished or self.position >= len(self.postings):
+            return None
+        return self.postings[self.position]
+    
+    def move_to_next_document(self):
+        """Move to the next document in the list"""
+        if not self.finished:
+            self.position += 1
+            if self.position >= len(self.postings):
+                self.finished = True
+    
+    def move_past_document(self, doc_id: str):
+        """Move past the specified document (used in doc-at-a-time)"""
+        while not self.finished and self.get_current_document() and self.get_current_document() <= doc_id:
+            self.move_to_next_document()
+    
+    def is_finished(self) -> bool:
+        """Check if we've reached the end of the list"""
+        return self.finished
+    
+    def find_document(self, doc_id: str) -> Dict:
+        """Binary search for a specific document in the postings list"""
+        if not self.postings:
+            return None
+        
+        left, right = 0, len(self.postings) - 1
+        
+        while left <= right:
+            mid = (left + right) // 2
+            mid_doc_id = self.postings[mid]['doc_id']
+            
+            if mid_doc_id == doc_id:
+                return self.postings[mid]
+            elif mid_doc_id < doc_id:
+                left = mid + 1
+            else:
+                right = mid - 1
+        
+        return None
+
 class SelfIndex(IndexBase):
     """Complete SelfIndex implementation supporting all 108 variant combinations"""
     
@@ -701,10 +758,11 @@ class SelfIndex(IndexBase):
             }
     
     def _term_at_a_time_query(self, parsed_query: Dict) -> List[Dict]:
-        """Term-at-a-time query processing"""
+        """Term-at-a-time query processing following textbook algorithm"""
         index_data = self.indices[self.current_index]
         inverted_index = index_data['inverted_index']
         
+        # Extract and preprocess query terms
         query_terms = []
         for term in parsed_query.get('terms', []):
             processed_terms = self._preprocess_text(term)
@@ -714,50 +772,67 @@ class SelfIndex(IndexBase):
             phrase_terms = self._preprocess_text(phrase)
             query_terms.extend(phrase_terms)
         
-        doc_scores = defaultdict(float)
-        doc_positions = defaultdict(dict)
-        doc_matches = defaultdict(set)
+        # Initialize accumulator hash table
+        accumulators = {}  # doc_id -> {'score': float, 'positions': dict, 'matched_terms': set}
         
+        # TERM-AT-A-TIME: Process each term completely before moving to next
         for term in set(query_terms):
             if term in inverted_index:
                 postings = self._get_postings(term, inverted_index)
                 
+                # Process all postings for this term
                 for posting in postings:
                     doc_id = posting['doc_id']
-                    doc_matches[doc_id].add(term)
                     
+                    # Initialize accumulator for this document if not exists
+                    if doc_id not in accumulators:
+                        accumulators[doc_id] = {
+                            'score': 0.0,
+                            'positions': {},
+                            'matched_terms': set()
+                        }
+                    
+                    # Calculate score contribution for this term
                     if self.index_type == 'BOOLEAN':
-                        score = 1.0
+                        score_contribution = 1.0
                     elif self.index_type == 'WORDCOUNT':
-                        score = posting.get('tf', 1.0)
+                        score_contribution = posting.get('tf', 1.0)
                     elif self.index_type == 'TFIDF':
-                        score = posting.get('tf_idf', 1.0)
+                        score_contribution = posting.get('tf_idf', 1.0)
                     else:
-                        score = 1.0
+                        score_contribution = 1.0
                     
-                    doc_scores[doc_id] += score
-                    doc_positions[doc_id][term] = posting.get('positions', [])
+                    # Update accumulator
+                    accumulators[doc_id]['score'] += score_contribution
+                    accumulators[doc_id]['positions'][term] = posting.get('positions', [])
+                    accumulators[doc_id]['matched_terms'].add(term)
         
-        filtered_docs = self._apply_boolean_logic(doc_matches, parsed_query)
-        
+        # Convert accumulators to results format
         results = []
-        for doc_id in filtered_docs:
-            if doc_id in doc_scores:
+        for doc_id, accumulator in accumulators.items():
+            # Apply boolean logic filtering
+            doc_matches = {doc_id: accumulator['matched_terms']}
+            filtered_docs = self._apply_boolean_logic(doc_matches, parsed_query)
+            
+            # Add to results if document passes boolean filter
+            if doc_id in filtered_docs and accumulator['score'] > 0:
                 results.append({
                     'doc_id': doc_id,
-                    'score': doc_scores[doc_id],
-                    'positions': doc_positions[doc_id],
-                    'matched_terms': list(doc_matches[doc_id])
+                    'score': accumulator['score'],
+                    'positions': accumulator['positions'],
+                    'matched_terms': list(accumulator['matched_terms'])
                 })
         
+        # Sort by score (highest first)
         results.sort(key=lambda x: x['score'], reverse=True)
         return results
     
     def _doc_at_a_time_query(self, parsed_query: Dict) -> List[Dict]:
-        """Document-at-a-time query processing"""
+        """Document-at-a-time query processing following textbook algorithm with pointer optimization"""
         index_data = self.indices[self.current_index]
         inverted_index = index_data['inverted_index']
         
+        # Extract and preprocess query terms
         query_terms = []
         for term in parsed_query.get('terms', []):
             processed_terms = self._preprocess_text(term)
@@ -767,51 +842,66 @@ class SelfIndex(IndexBase):
             phrase_terms = self._preprocess_text(phrase)
             query_terms.extend(phrase_terms)
         
-        postings_lists = []
+        # Create inverted list pointers for each query term
+        inverted_list_pointers = []
         for term in set(query_terms):
             if term in inverted_index:
                 postings = self._get_postings(term, inverted_index)
                 if postings:
-                    postings_lists.append((term, postings))
+                    pointer = InvertedListPointer(term, postings)
+                    inverted_list_pointers.append(pointer)
         
-        if not postings_lists:
+        if not inverted_list_pointers:
             return []
         
-        shortest_term, shortest_postings = min(postings_lists, key=lambda x: len(x[1]))
-        candidate_docs = [p['doc_id'] for p in shortest_postings]
+        # Get all unique document IDs that appear in any inverted list (optimization)
+        all_candidate_docs = self._get_all_candidate_documents(inverted_list_pointers)
         
         results = []
-        for doc_id in candidate_docs:
-            total_score = 0
+        
+        # DOCUMENT-AT-A-TIME: Loop through each document (following textbook algorithm)
+        for doc_id in all_candidate_docs:
+            doc_score = 0.0
             doc_positions = {}
             matched_terms = set()
             
-            for term, postings in postings_lists:
-                for posting in postings:
-                    if posting['doc_id'] == doc_id:
-                        matched_terms.add(term)
-                        
-                        if self.index_type == 'BOOLEAN':
-                            total_score += 1.0
-                        elif self.index_type == 'WORDCOUNT':
-                            total_score += posting.get('tf', 1.0)
-                        elif self.index_type == 'TFIDF':
-                            total_score += posting.get('tf_idf', 1.0)
-                        
-                        doc_positions[term] = posting.get('positions', [])
-                        break
+            # For this document, check each inverted list efficiently using binary search
+            for pointer in inverted_list_pointers:
+                # Use binary search to find document in this posting list - O(log n) instead of O(n)
+                found_posting = pointer.find_document(doc_id)
+                
+                # If document appears in this inverted list
+                if found_posting:
+                    term = pointer.term
+                    matched_terms.add(term)
+                    
+                    # Calculate score contribution for this term
+                    if self.index_type == 'BOOLEAN':
+                        score_contribution = 1.0
+                    elif self.index_type == 'WORDCOUNT':
+                        score_contribution = found_posting.get('tf', 1.0)
+                    elif self.index_type == 'TFIDF':
+                        score_contribution = found_posting.get('tf_idf', 1.0)
+                    else:
+                        score_contribution = 1.0
+                    
+                    doc_score += score_contribution
+                    doc_positions[term] = found_posting.get('positions', [])
             
+            # Apply boolean logic filtering
             doc_matches = {doc_id: matched_terms}
             filtered_docs = self._apply_boolean_logic(doc_matches, parsed_query)
             
-            if doc_id in filtered_docs and total_score > 0:
+            # Add to results if document passes boolean filter and has non-zero score
+            if doc_id in filtered_docs and doc_score > 0:
                 results.append({
                     'doc_id': doc_id,
-                    'score': total_score,
+                    'score': doc_score,
                     'positions': doc_positions,
                     'matched_terms': list(matched_terms)
                 })
         
+        # Sort by score (highest first)
         results.sort(key=lambda x: x['score'], reverse=True)
         return results
     
@@ -872,6 +962,16 @@ class SelfIndex(IndexBase):
             })
         
         return formatted
+
+    def _get_all_candidate_documents(self, inverted_list_pointers: List[InvertedListPointer]) -> List[str]:
+        """Get all unique document IDs from all inverted lists, sorted"""
+        all_doc_ids = set()
+        
+        for pointer in inverted_list_pointers:
+            for posting in pointer.postings:
+                all_doc_ids.add(posting['doc_id'])
+        
+        return sorted(list(all_doc_ids))
     
     def _index_exists(self, index_id: str) -> bool:
         """Check if index exists"""

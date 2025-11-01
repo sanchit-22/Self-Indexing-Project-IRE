@@ -43,7 +43,7 @@ class OptimizedSelfIndexEvaluator:
             return self.cached_test_data
 
         import pandas as pd
-        csv_path = Path("dataset/preprocessed_dataset.csv")
+        csv_path = Path("../Dataset/PreProcessedData/preprocessed_dataset.csv")
         assert csv_path.exists(), f"CSV not found: {csv_path}"
         print(f"📁 Loading preprocessed dataset from {csv_path} ...")
         df = pd.read_csv(csv_path)
