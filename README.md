@@ -76,6 +76,17 @@ All pre-built index files for the 72 configurations are available for download:
 
 ---
 
+## 📦 Download Preprocessed Dataset (Google Drive)
+
+The preprocessed Wikipedia dataset (50K documents) is available for download:
+
+**[Download Dataset from Google Drive](https://drive.google.com/drive/folders/1ZL6LU-0D8rhT4SeVSgLvpH6Vq2_Pg4zH?usp=sharing)**
+
+- Place downloaded files in `src/Dataset/PreProcessedData/`
+- This allows you to skip the data preprocessing step and directly run evaluations
+
+---
+
 ## 🔧 Setup & Installation
 
 ### Prerequisites
