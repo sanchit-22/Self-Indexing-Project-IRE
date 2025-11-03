@@ -12,6 +12,7 @@ import time
 import re
 import os
 import shutil
+import heapq
 from collections import defaultdict, Counter
 from pathlib import Path
 import nltk
@@ -86,12 +87,49 @@ class InvertedListPointer:
                 right = mid - 1
         
         return None
+    
+    def find_document_with_skips(self, doc_id: str) -> Dict:
+        """Use skip pointers to efficiently find a document.
+        
+        IMPORTANT: Maintains pointer position across calls for efficiency.
+        Use self.position instead of resetting to 0 each time.
+        """
+        if not self.postings:
+            return None
+        
+        # DON'T reset to 0! Use current position for sequential access
+        # Since documents are processed in order, we can continue from where we left off
+        while self.position < len(self.postings):
+            current_posting = self.postings[self.position]
+            current_doc_id = current_posting['doc_id']
+            
+            if current_doc_id == doc_id:
+                # Found it! Don't advance position yet (may need to check again)
+                return current_posting
+            elif current_doc_id > doc_id:
+                # We've passed the target document
+                return None
+            
+            # Check if we can use skip pointer
+            if 'skip_to' in current_posting and 'skip_doc_id' in current_posting:
+                skip_doc_id = current_posting['skip_doc_id']
+                if skip_doc_id <= doc_id:
+                    # Skip ahead
+                    self.position = current_posting['skip_to']
+                else:
+                    # Can't skip, move to next
+                    self.position += 1
+            else:
+                # No skip pointer, move to next
+                self.position += 1
+        
+        return None
 
 class SelfIndex(IndexBase):
     """Complete SelfIndex implementation supporting all 108 variant combinations"""
     
     def __init__(self, index_type='BOOLEAN', datastore='CUSTOM', compression='NONE', 
-                 query_proc='TERMatat', optimization='Null'):
+                 query_proc='TERMatat', optimization='Null', data_dir=None):
         super().__init__(core='SelfIndex', info=index_type, dstore=datastore, 
                          qproc=query_proc, compr=compression, optim=optimization)
         
@@ -112,7 +150,10 @@ class SelfIndex(IndexBase):
         self.punct_table = str.maketrans('', '', string.punctuation)
         
         # Initialize storage
-        self.data_dir = Path("selfindex_data")
+        if data_dir is None:
+            self.data_dir = Path("selfindex_data")
+        else:
+            self.data_dir = Path(data_dir) if not isinstance(data_dir, Path) else data_dir
         self.data_dir.mkdir(exist_ok=True)
         
         # Index structures
@@ -121,6 +162,12 @@ class SelfIndex(IndexBase):
         
         # Initialize storage backend
         self._init_storage()
+        
+        # Add decompression cache to avoid repeated decompression
+        self._decompression_cache = {}
+        
+        # Add query preprocessing cache
+        self._query_preprocessing_cache = {}
     
     def _init_storage(self):
         """Initialize storage backend based on configuration"""
@@ -170,9 +217,13 @@ class SelfIndex(IndexBase):
             print(f"SQLite initialization error: {e}")
     
     def _preprocess_text(self, text: str) -> List[str]:
-        """Preprocess text: lowercase, remove punctuation, tokenize, remove stopwords, stem"""
+        """Preprocess text with caching for repeated queries"""
         if not text:
             return []
+        
+        # Check cache first
+        if text in self._query_preprocessing_cache:
+            return self._query_preprocessing_cache[text]
         
         try:
             text = text.lower().translate(self.punct_table)
@@ -187,11 +238,15 @@ class SelfIndex(IndexBase):
                         stemmed = word
                     processed_tokens.append(stemmed)
             
+            # Cache the result
+            self._query_preprocessing_cache[text] = processed_tokens
             return processed_tokens
         except:
             # Fallback if NLTK fails
             words = text.lower().translate(self.punct_table).split()
-            return [w for w in words if w.isalpha() and w not in self.stop_words]
+            processed = [w for w in words if w.isalpha() and w not in self.stop_words]
+            self._query_preprocessing_cache[text] = processed
+            return processed
     
     def create_index(self, index_id: str, files: Iterable, pretokenized: bool = False) -> None:
         """Creates comprehensive index with all specified variants. If pretokenized=True, expects (doc_id, tokens, content)."""
@@ -292,7 +347,7 @@ class SelfIndex(IndexBase):
             'term_doc_frequencies': dict(term_doc_frequencies)
         })
         
-        # Load index into memory
+        # Keep index in memory (already constructed, don't reload from disk)
         self.current_index = index_id
         self.indices[index_id] = {
             'inverted_index': inverted_index,
@@ -303,6 +358,9 @@ class SelfIndex(IndexBase):
                 'total_tokens': total_tokens
             }
         }
+        
+        # Clear decompression cache for new index
+        self._decompression_cache.clear()
         
         print(f"🎉 Index {index_id} created successfully!")
     
@@ -344,8 +402,10 @@ class SelfIndex(IndexBase):
             current_hash = hash(current['doc_id']) % 1000000
             delta = current_hash - prev_hash
             
+            # FIX: Must store doc_id in deltas to reconstruct during decompression!
             compressed_data['deltas'].append({
                 'delta': delta,
+                'doc_id': current['doc_id'],  # FIX: Store actual doc_id
                 'positions': current.get('positions', []),
                 'tf': current.get('tf', 1),
                 'tf_idf': current.get('tf_idf', 0),
@@ -398,13 +458,15 @@ class SelfIndex(IndexBase):
             if 'deltas' not in compressed_data:
                 return result
             
-            prev_hash = hash(compressed_data['first']['doc_id']) % 1000000
+            # We need to store the actual doc_ids in the deltas!
+            # The delta compression should store doc_id, not just the hash delta
+            # For now, we need to retrieve the original doc_ids
+            # This is a BUG: delta compression loses doc_id information!
             
+            # TEMPORARY FIX: Store doc_id in deltas during compression
             for delta_info in compressed_data['deltas']:
-                current_hash = prev_hash + delta_info['delta']
-                
                 doc_posting = {
-                    'doc_id': compressed_data['first']['doc_id'],  # Use original doc_id
+                    'doc_id': delta_info.get('doc_id', 'unknown'),  # FIX: Get from delta_info
                     'positions': delta_info.get('positions', []),
                     'doc_length': delta_info.get('doc_length', 0)
                 }
@@ -415,7 +477,6 @@ class SelfIndex(IndexBase):
                     doc_posting['tf_idf'] = delta_info['tf_idf']
                 
                 result.append(doc_posting)
-                prev_hash = current_hash
             
             return result
             
@@ -584,6 +645,8 @@ class SelfIndex(IndexBase):
                 self._load_json_db(index_id)
             
             self.current_index = index_id
+            # Clear decompression cache when loading index
+            self._decompression_cache.clear()
             print(f"✅ Index {index_id} loaded successfully")
             
         except Exception as e:
@@ -758,7 +821,7 @@ class SelfIndex(IndexBase):
             }
     
     def _term_at_a_time_query(self, parsed_query: Dict) -> List[Dict]:
-        """Term-at-a-time query processing following textbook algorithm"""
+        """Term-at-a-time query processing with optimized caching"""
         index_data = self.indices[self.current_index]
         inverted_index = index_data['inverted_index']
         
@@ -778,6 +841,7 @@ class SelfIndex(IndexBase):
         # TERM-AT-A-TIME: Process each term completely before moving to next
         for term in set(query_terms):
             if term in inverted_index:
+                # Use cached postings to avoid repeated decompression
                 postings = self._get_postings(term, inverted_index)
                 
                 # Process all postings for this term
@@ -823,12 +887,18 @@ class SelfIndex(IndexBase):
                     'matched_terms': list(accumulator['matched_terms'])
                 })
         
-        # Sort by score (highest first)
-        results.sort(key=lambda x: x['score'], reverse=True)
+        # OPTIMIZATION: Use heapq.nlargest to get only top 10 results
+        # This is much faster than sorting all results, especially for TFIDF with thousands of matches
+        if len(results) > 10:
+            results = heapq.nlargest(10, results, key=lambda x: x['score'])
+        else:
+            # Sort by score (highest first) only if 10 or fewer results
+            results.sort(key=lambda x: x['score'], reverse=True)
+        
         return results
     
     def _doc_at_a_time_query(self, parsed_query: Dict) -> List[Dict]:
-        """Document-at-a-time query processing following textbook algorithm with pointer optimization"""
+        """Document-at-a-time query processing with optimized caching and compression handling"""
         index_data = self.indices[self.current_index]
         inverted_index = index_data['inverted_index']
         
@@ -842,40 +912,52 @@ class SelfIndex(IndexBase):
             phrase_terms = self._preprocess_text(phrase)
             query_terms.extend(phrase_terms)
         
-        # Create inverted list pointers for each query term
-        inverted_list_pointers = []
+        # Pre-load and cache all postings for query terms (critical for compressed indexes)
+        term_postings = {}
         for term in set(query_terms):
             if term in inverted_index:
+                # This will use caching to avoid repeated decompression
                 postings = self._get_postings(term, inverted_index)
                 if postings:
-                    pointer = InvertedListPointer(term, postings)
-                    inverted_list_pointers.append(pointer)
+                    term_postings[term] = postings
         
-        if not inverted_list_pointers:
+        if not term_postings:
             return []
         
-        # Get all unique document IDs that appear in any inverted list (optimization)
+        # Create inverted list pointers from cached postings
+        inverted_list_pointers = []
+        for term, postings in term_postings.items():
+            pointer = InvertedListPointer(term, postings)
+            inverted_list_pointers.append(pointer)
+        
+        # For document-at-a-time with skip pointers, use proper intersection
+        if self.optimization == 'Skipping':
+            return self._doc_at_a_time_with_skips(inverted_list_pointers, parsed_query)
+        else:
+            return self._doc_at_a_time_basic(inverted_list_pointers, parsed_query)
+    
+    def _doc_at_a_time_basic(self, inverted_list_pointers, parsed_query):
+        """Basic document-at-a-time without skip pointers"""
+        # Get all unique document IDs efficiently
         all_candidate_docs = self._get_all_candidate_documents(inverted_list_pointers)
         
         results = []
         
-        # DOCUMENT-AT-A-TIME: Loop through each document (following textbook algorithm)
+        # Process each document
         for doc_id in all_candidate_docs:
             doc_score = 0.0
             doc_positions = {}
             matched_terms = set()
             
-            # For this document, check each inverted list efficiently using binary search
+            # Check each inverted list using binary search
             for pointer in inverted_list_pointers:
-                # Use binary search to find document in this posting list - O(log n) instead of O(n)
                 found_posting = pointer.find_document(doc_id)
                 
-                # If document appears in this inverted list
                 if found_posting:
                     term = pointer.term
                     matched_terms.add(term)
                     
-                    # Calculate score contribution for this term
+                    # Calculate score contribution
                     if self.index_type == 'BOOLEAN':
                         score_contribution = 1.0
                     elif self.index_type == 'WORDCOUNT':
@@ -892,7 +974,6 @@ class SelfIndex(IndexBase):
             doc_matches = {doc_id: matched_terms}
             filtered_docs = self._apply_boolean_logic(doc_matches, parsed_query)
             
-            # Add to results if document passes boolean filter and has non-zero score
             if doc_id in filtered_docs and doc_score > 0:
                 results.append({
                     'doc_id': doc_id,
@@ -901,8 +982,92 @@ class SelfIndex(IndexBase):
                     'matched_terms': list(matched_terms)
                 })
         
-        # Sort by score (highest first)
-        results.sort(key=lambda x: x['score'], reverse=True)
+        # OPTIMIZATION: Use heapq.nlargest to get only top 10 results
+        if len(results) > 10:
+            results = heapq.nlargest(10, results, key=lambda x: x['score'])
+        else:
+            results.sort(key=lambda x: x['score'], reverse=True)
+        
+        return results
+    
+    def _doc_at_a_time_with_skips(self, inverted_list_pointers, parsed_query):
+        """Optimized document-at-a-time using skip pointers and sequential processing"""
+        # Sort pointers by posting list length (shortest first for efficiency)
+        sorted_pointers = sorted(inverted_list_pointers, key=lambda p: len(p.postings))
+        
+        if not sorted_pointers:
+            return []
+        
+        # IMPORTANT: Reset all pointer positions to 0 before starting
+        for pointer in sorted_pointers:
+            pointer.position = 0
+            pointer.finished = len(pointer.postings) == 0
+        
+        # Use the shortest list to drive the iteration
+        main_pointer = sorted_pointers[0]
+        other_pointers = sorted_pointers[1:]
+        
+        results = []
+        
+        # Sequential document processing using the main pointer
+        for posting in main_pointer.postings:
+            doc_id = posting['doc_id']
+            doc_score = 0.0
+            doc_positions = {}
+            matched_terms = set()
+            
+            # Add score from main term
+            term = main_pointer.term
+            matched_terms.add(term)
+            
+            if self.index_type == 'BOOLEAN':
+                doc_score = 1.0
+            elif self.index_type == 'WORDCOUNT':
+                doc_score = posting.get('tf', 1.0)
+            elif self.index_type == 'TFIDF':
+                doc_score = posting.get('tf_idf', 1.0)
+            else:
+                doc_score = 1.0
+            
+            doc_positions[term] = posting.get('positions', [])
+            
+            # Check other terms using skip pointers
+            for pointer in other_pointers:
+                found_posting = pointer.find_document_with_skips(doc_id)
+                
+                if found_posting:
+                    term = pointer.term
+                    matched_terms.add(term)
+                    
+                    if self.index_type == 'BOOLEAN':
+                        doc_score += 1.0
+                    elif self.index_type == 'WORDCOUNT':
+                        doc_score += found_posting.get('tf', 1.0)
+                    elif self.index_type == 'TFIDF':
+                        doc_score += found_posting.get('tf_idf', 1.0)
+                    else:
+                        doc_score += 1.0
+                    
+                    doc_positions[term] = found_posting.get('positions', [])
+            
+            # Apply boolean logic filtering
+            doc_matches = {doc_id: matched_terms}
+            filtered_docs = self._apply_boolean_logic(doc_matches, parsed_query)
+            
+            if doc_id in filtered_docs and doc_score > 0:
+                results.append({
+                    'doc_id': doc_id,
+                    'score': doc_score,
+                    'positions': doc_positions,
+                    'matched_terms': list(matched_terms)
+                })
+        
+        # OPTIMIZATION: Use heapq.nlargest to get only top 10 results
+        if len(results) > 10:
+            results = heapq.nlargest(10, results, key=lambda x: x['score'])
+        else:
+            results.sort(key=lambda x: x['score'], reverse=True)
+        
         return results
     
     def _apply_boolean_logic(self, doc_matches: Dict, parsed_query: Dict) -> Set[str]:
@@ -935,12 +1100,22 @@ class SelfIndex(IndexBase):
         return valid_docs
     
     def _get_postings(self, term: str, inverted_index: Dict) -> List[Dict]:
-        """Get postings for a term, handling decompression"""
+        """Get postings for a term, handling decompression with caching"""
         if term not in inverted_index:
             return []
         
+        # Check cache first to avoid repeated decompression
+        cache_key = f"{self.current_index}_{term}"
+        if cache_key in self._decompression_cache:
+            return self._decompression_cache[cache_key]
+        
         postings = inverted_index[term]
-        return self._decompress_postings(postings, term)
+        decompressed_postings = self._decompress_postings(postings, term)
+        
+        # Cache the decompressed postings
+        self._decompression_cache[cache_key] = decompressed_postings
+        
+        return decompressed_postings
     
     def _format_results(self, results: List[Dict]) -> List[Dict]:
         """Format results for output"""

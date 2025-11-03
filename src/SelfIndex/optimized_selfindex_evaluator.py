@@ -286,41 +286,54 @@ class OptimizedSelfIndexEvaluator:
     def _evaluate_single_configuration_comprehensive(self, config, test_data, query_set):
         """Evaluate a single configuration with ALL metrics A,B,C,D"""
         
-        indexer = SelfIndex(
-            index_type=config['index_type'],
-            datastore=config['datastore'],
-            compression=config['compression'],
-            query_proc=config['query_proc'],
-            optimization=config['optimization']
-        )
-
-        result = {
-            'config': config,
-            'metrics': {
-                'latency': {},
-                'throughput': {},
-                'memory': {},
-                'functional': {}
-            }
-        }
-
         try:
+            # Store index in 'indexes/' with required naming policy
+            # Naming: SelfIndex_iXdYcZqQO
+            x = config['x']
+            y = config['y']
+            z = config['z']
+            q = config['q']
+            o = '0' if config['optimization'] == 'Null' else 'Sp'
+            index_folder_name = f"SelfIndex_i{x}d{y}c{z}q{q}{o}"
+            indexes_dir = Path('indexes')
+            indexes_dir.mkdir(exist_ok=True)
+            
+            # Create indexer and change data_dir to store directly in final location
+            indexer = SelfIndex(
+                index_type=config['index_type'],
+                datastore=config['datastore'],
+                compression=config['compression'],
+                query_proc=config['query_proc'],
+                optimization=config['optimization'],
+                data_dir=indexes_dir  # Store directly in final location
+            )
+
+            result = {
+                'config': config,
+                'metrics': {
+                    'latency': {},
+                    'throughput': {},
+                    'memory': {},
+                    'functional': {}
+                }
+            }
+
             # === INDEXING PHASE ===
             process = psutil.Process()
             mem_before = process.memory_info().rss / (1024 * 1024)
 
-            index_id = f"eval_{config['config_id']}"
+            # Use the final folder name as index_id to avoid intermediate storage
             start_time = time.time()
             # test_data: (doc_id, tokens, content)
             # Pass tokens directly to SelfIndex
-            indexer.create_index(index_id, [(doc_id, tokens, content) for doc_id, tokens, content in test_data], pretokenized=True)
+            indexer.create_index(index_folder_name, [(doc_id, tokens, content) for doc_id, tokens, content in test_data], pretokenized=True)
             index_time = time.time() - start_time
 
             mem_after = process.memory_info().rss / (1024 * 1024)
             memory_usage = mem_after - mem_before
 
             # Estimate index size
-            index_size = self._estimate_index_size(indexer, index_id)
+            index_size = self._estimate_index_size(indexer, index_folder_name)
 
             # === METRIC A: COMPREHENSIVE LATENCY MEASUREMENT ===
             latency_metrics = self._measure_latency_comprehensive(indexer, query_set)
@@ -341,35 +354,12 @@ class OptimizedSelfIndexEvaluator:
             # === METRIC D: COMPREHENSIVE FUNCTIONAL MEASUREMENT ===
             functional_metrics = self._measure_functional_comprehensive(indexer, query_set)
 
-            # Store index in 'indexes/' with required naming policy
-            # Naming: SelfIndex_iXdYcZqQO
-            x = config['x']
-            y = config['y']
-            z = config['z']
-            q = config['q']
-            o = '0' if config['optimization'] == 'Null' else 'Sp'
-            index_folder_name = f"SelfIndex_i{x}d{y}c{z}q{q}{o}"
-            indexes_dir = Path('indexes')
-            indexes_dir.mkdir(exist_ok=True)
-
-            # Move or copy the index files/folder depending on backend
-            if indexer.datastore == 'CUSTOM':
-                src = indexer.data_dir / index_id
-                dst = indexes_dir / index_folder_name
-                if src.exists():
-                    if dst.exists():
-                        import shutil; shutil.rmtree(dst)
-                    import shutil; shutil.copytree(src, dst)
-            elif indexer.datastore == 'DB1':
-                src = indexer.db_path
-                dst = indexes_dir / f"{index_folder_name}.db"
-                if src.exists():
-                    import shutil; shutil.copy2(src, dst)
+            # Get the final index path (already stored in correct location)
+            index_path = indexes_dir / index_folder_name
+            if indexer.datastore == 'DB1':
+                index_path = indexes_dir / f"{index_folder_name}.db"
             elif indexer.datastore == 'DB2':
-                src = indexer.json_db_path
-                dst = indexes_dir / f"{index_folder_name}.json"
-                if src.exists():
-                    import shutil; shutil.copy2(src, dst)
+                index_path = indexes_dir / f"{index_folder_name}.json"
 
             result.update({
                 'index_time': index_time,
@@ -379,7 +369,7 @@ class OptimizedSelfIndexEvaluator:
                     'memory': memory_metrics,
                     'functional': functional_metrics
                 },
-                'index_path': str((indexes_dir / index_folder_name).absolute())
+                'index_path': str(index_path.absolute())
             })
             
         except Exception as e:

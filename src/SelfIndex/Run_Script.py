@@ -11,7 +11,7 @@ def run_quick_test():
     print("="*40)
     
     evaluator = OptimizedSelfIndexEvaluator()
-    results = evaluator.run_comprehensive_evaluation(max_configs=72, sample_size=100)
+    results = evaluator.run_comprehensive_evaluation(max_configs=3, sample_size=100)
     print(f"✅ Quick test complete: {len(results)} configurations tested")
 
 def run_medium_test():
