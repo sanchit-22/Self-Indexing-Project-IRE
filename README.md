@@ -18,9 +18,8 @@ This is a comprehensive Information Retrieval assignment implementing **72 diffe
 ```
 Self-Indexing-Project-IRE/
 ├── README.md                              # This file - Complete project guide
-├── comprehensive_enhanced_report.pdf      # FINAL REPORT (38 pages)
-├── comprehensive_enhanced_report.tex      # LaTeX source for the report
-├── PLOT_BC_COMPLIANCE_SUMMARY.md          # Detailed Plot B/C implementation summary
+├── Report.pdf                             # FINAL REPORT (38 pages)
+├── Report.tex                             # LaTeX source for the report
 │
 ├── src/                                   # Main source code directory
 │   ├── requirements.txt                   # Python dependencies
@@ -38,29 +37,14 @@ Self-Indexing-Project-IRE/
 │   │   ├── indexes/                       # Stored index files (generated)
 │   │   └── comprehensive_selfindex_results/  # Evaluation results (generated)
 │   │
-│   ├── ElasticSearchIndex/                # Alternative: Elasticsearch implementation
-│   │   ├── ElasticSearch.ipynb            # Jupyter notebook for ES setup
-│   │   └── install_docker.sh              # Docker installation script
-│   │
-│   ├── local_wikipedia_data/              # Wikipedia dataset cache
-│   │   └── wikimedia___wikipedia/20231101.en/ # Raw data files
-│   │
-│   └── DumpFiles/                         # Reference/legacy files
-│       ├── CodebaseExplanation.md         # Detailed architecture documentation
-│       ├── IMPLEMENTATION_SUMMARY.md      # Implementation notes
-│       ├── complete_evaluation.py         # Reference evaluation script
-│       ├── compression.py                 # Compression utilities
-│       ├── db_backends.py                 # Database backend implementations
-│       ├── query_parser.py                # Query parsing utilities
-│       ├── test_self_index.py             # Unit tests
-│       └── *.ipynb                        # Reference Jupyter notebooks
+│   └── ElasticSearchIndex/                # Alternative: Elasticsearch implementation
+│       ├── ElasticSearch.ipynb            # Jupyter notebook for ES setup
+│       └── install_docker.sh              # Docker installation script
 │
 ├── report_plots/                          # Generated visualization plots
 │   ├── plot_a_*.pdf                       # Latency plots (P50, P95, P99)
 │   ├── plot_b_*.pdf                       # Throughput plots (QPS)
 │   └── plot_c_*.pdf                       # Memory footprint plots (MB)
-│
-└── myenv/                                 # Python virtual environment
 ```
 
 ---
@@ -434,12 +418,12 @@ Plots are saved to `report_plots/` directory.
 
 ```bash
 cd /path/to/project/root
-pdflatex -interaction=nonstopmode comprehensive_enhanced_report.tex
+pdflatex -interaction=nonstopmode Report.tex
 ```
 
 Output:
 
-- `comprehensive_enhanced_report.pdf` (38 pages)
+- `Report.pdf` (38 pages)
 - Contains all plots, analysis, and recommendations
 
 ### Report Sections
@@ -482,7 +466,7 @@ pip install -r src/requirements.txt
 ls -lh src/Dataset/PreProcessedData/preprocessed_dataset.csv
 ```
 
-If missing, download Wikipedia dataset:
+If missing, download the preprocessed dataset from Google Drive or regenerate:
 
 ```bash
 cd src
@@ -604,10 +588,8 @@ python3 create_missing_plots.py
 
 ## 📚 Related Documentation
 
-- **`src/DumpFiles/CodebaseExplanation.md`** - Detailed architecture breakdown
-- **`src/DumpFiles/IMPLEMENTATION_SUMMARY.md`** - Implementation details
-- **`PLOT_BC_COMPLIANCE_SUMMARY.md`** - Plot B/C methodology
-- **`comprehensive_enhanced_report.tex`** - Full LaTeX source
+- **`Report.tex`** - Full LaTeX source for the comprehensive report
+- **`report_plots/`** - All generated visualizations and analysis plots
 
 ---
 
@@ -647,10 +629,10 @@ To modify or extend the project:
 
 For issues or questions:
 
-1. Check `DumpFiles/CodebaseExplanation.md` for architecture details
-2. Review `PLOT_BC_COMPLIANCE_SUMMARY.md` for metrics explanation
-3. See comprehensive report PDF for formal analysis
-4. Check test files in `DumpFiles/` for usage examples
+1. Check the comprehensive report PDF for detailed analysis and implementation details
+2. Review the source code in `src/SelfIndex/` for technical implementation
+3. See evaluation results in `src/SelfIndex/comprehensive_selfindex_results/`
+4. Check test files and manual testing utilities for usage examples
 
 ---
 
@@ -681,11 +663,8 @@ cd SelfIndex && python3 Run_Script.py medium
 # Full evaluation (3-4 hours)
 cd SelfIndex && python3 Run_Script.py full
 
-# Generate plots
-cd .. && python3 create_missing_plots.py
-
 # Build report
-cd /path/to/root && pdflatex comprehensive_enhanced_report.tex
+cd /path/to/root && pdflatex Report.tex
 
 # Manual testing
 cd SelfIndex && python3 manual_test_index.py
