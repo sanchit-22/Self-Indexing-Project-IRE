@@ -8,3 +8,11 @@ myenv/
 dataset/
 src/Dataset/PreProcessedData
 src/SelfIndex/Indexes
+src/SelfIndex/selfindex_data
+src/SelfIndex/indexes
+src/SelfIndex/DumpFiles
+src/DumpFiles
+src/SelfIndex/comprehensive_selfindex_results/.~lock.analysis.csv#
+DumpFiles
+report_plots
+src/DumpFiles

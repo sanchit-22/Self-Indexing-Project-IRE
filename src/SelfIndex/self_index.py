@@ -937,49 +937,57 @@ class SelfIndex(IndexBase):
             return self._doc_at_a_time_basic(inverted_list_pointers, parsed_query)
     
     def _doc_at_a_time_basic(self, inverted_list_pointers, parsed_query):
-        """Basic document-at-a-time without skip pointers"""
-        # Get all unique document IDs efficiently
-        all_candidate_docs = self._get_all_candidate_documents(inverted_list_pointers)
+        """Optimized document-at-a-time without skip pointers using accumulator approach"""
+        # OPTIMIZATION: Instead of getting all candidate docs and doing binary search for each,
+        # use an accumulator-based approach similar to TERMatat but process documents on-the-fly
         
-        results = []
+        # Use dictionary to accumulate scores as we scan posting lists
+        accumulators = {}  # doc_id -> {'score': float, 'positions': dict, 'matched_terms': set}
         
-        # Process each document
-        for doc_id in all_candidate_docs:
-            doc_score = 0.0
-            doc_positions = {}
-            matched_terms = set()
+        # Process each term's posting list completely
+        for pointer in inverted_list_pointers:
+            term = pointer.term
             
-            # Check each inverted list using binary search
-            for pointer in inverted_list_pointers:
-                found_posting = pointer.find_document(doc_id)
+            # Scan through all postings for this term
+            for posting in pointer.postings:
+                doc_id = posting['doc_id']
                 
-                if found_posting:
-                    term = pointer.term
-                    matched_terms.add(term)
-                    
-                    # Calculate score contribution
-                    if self.index_type == 'BOOLEAN':
-                        score_contribution = 1.0
-                    elif self.index_type == 'WORDCOUNT':
-                        score_contribution = found_posting.get('tf', 1.0)
-                    elif self.index_type == 'TFIDF':
-                        score_contribution = found_posting.get('tf_idf', 1.0)
-                    else:
-                        score_contribution = 1.0
-                    
-                    doc_score += score_contribution
-                    doc_positions[term] = found_posting.get('positions', [])
-            
+                # Initialize accumulator for this document if not exists
+                if doc_id not in accumulators:
+                    accumulators[doc_id] = {
+                        'score': 0.0,
+                        'positions': {},
+                        'matched_terms': set()
+                    }
+                
+                # Calculate score contribution
+                if self.index_type == 'BOOLEAN':
+                    score_contribution = 1.0
+                elif self.index_type == 'WORDCOUNT':
+                    score_contribution = posting.get('tf', 1.0)
+                elif self.index_type == 'TFIDF':
+                    score_contribution = posting.get('tf_idf', 1.0)
+                else:
+                    score_contribution = 1.0
+                
+                # Update accumulator
+                accumulators[doc_id]['score'] += score_contribution
+                accumulators[doc_id]['positions'][term] = posting.get('positions', [])
+                accumulators[doc_id]['matched_terms'].add(term)
+        
+        # Convert accumulators to results format
+        results = []
+        for doc_id, accumulator in accumulators.items():
             # Apply boolean logic filtering
-            doc_matches = {doc_id: matched_terms}
+            doc_matches = {doc_id: accumulator['matched_terms']}
             filtered_docs = self._apply_boolean_logic(doc_matches, parsed_query)
             
-            if doc_id in filtered_docs and doc_score > 0:
+            if doc_id in filtered_docs and accumulator['score'] > 0:
                 results.append({
                     'doc_id': doc_id,
-                    'score': doc_score,
-                    'positions': doc_positions,
-                    'matched_terms': list(matched_terms)
+                    'score': accumulator['score'],
+                    'positions': accumulator['positions'],
+                    'matched_terms': list(accumulator['matched_terms'])
                 })
         
         # OPTIMIZATION: Use heapq.nlargest to get only top 10 results

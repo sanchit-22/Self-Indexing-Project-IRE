@@ -1,0 +1,48 @@
+{
+  "system_name": "ESIndex-v1.0",
+  "dataset": "wikipedia",
+  "document_count": 50000,
+  "index_name": "esindex-v1.0",
+  "timestamp": "2025-11-03T22:28:23.526223",
+  "metrics": {
+    "latency": {
+      "p50": 9.515047073364258,
+      "p90": 20.069885253906254,
+      "p95": 20.524930953979492,
+      "p99": 25.06334781646728,
+      "mean": 11.394572812457417,
+      "min": 3.2835006713867188,
+      "max": 25.597572326660156,
+      "total_queries": 43
+    },
+    "throughput": {
+      "single_thread_qps": 72.1781903666184,
+      "multi_thread_qps": 331.21604562324995,
+      "speedup_factor": 4.588866026439389,
+      "thread_count": 4,
+      "test_duration": 30,
+      "total_queries": 12107
+    },
+    "memory": {
+      "process_memory_mb": 1324.328125,
+      "process_memory_percent": 8.447074974679554,
+      "system_total_gb": 15.310497283935547,
+      "system_available_gb": 1.3155136108398438,
+      "system_usage_percent": 91.4,
+      "index_size_mb": 140.9620237350464,
+      "index_document_count": 50000,
+      "index_deleted_docs": 0,
+      "avg_doc_size_kb": 2.88690224609375,
+      "documents_per_mb": 354.7054637494457,
+      "peak_memory_mb": 3391.90625,
+      "average_memory_mb": 3196.24375,
+      "min_memory_mb": 1763.65625,
+      "memory_growth_mb": -1627.875
+    },
+    "functional": {
+      "mean_average_precision": 0.1,
+      "mean_f1_score": 0.18181818181818182,
+      "coverage_rate": 1.0
+    }
+  }
+}

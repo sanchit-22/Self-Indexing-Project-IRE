@@ -8,7 +8,7 @@
   "best_performers": {
     "latency": {
       "config": "SelfIndex_064_TFID_DB1_NONE_Skip_DOCa",
-      "value": 22.37576246261597,
+      "value": 22.731685638427738,
       "config_details": {
         "name": "SelfIndex_064_TFID_DB1_NONE_Skip_DOCa",
         "config_id": 64,
@@ -25,17 +25,17 @@
       }
     },
     "throughput": {
-      "config": "SelfIndex_012_BOOL_CUST_CLIB_Skip_DOCa",
-      "value": 84.91333774770273,
+      "config": "SelfIndex_036_WORD_CUST_CLIB_Skip_DOCa",
+      "value": 85.04538050322876,
       "config_details": {
-        "name": "SelfIndex_012_BOOL_CUST_CLIB_Skip_DOCa",
-        "config_id": 12,
-        "index_type": "BOOLEAN",
+        "name": "SelfIndex_036_WORD_CUST_CLIB_Skip_DOCa",
+        "config_id": 36,
+        "index_type": "WORDCOUNT",
         "datastore": "CUSTOM",
         "compression": "CLIB",
         "query_proc": "DOCatat",
         "optimization": "Skipping",
-        "x": 1,
+        "x": 2,
         "y": 1,
         "z": 3,
         "i": 1,
@@ -44,7 +44,7 @@
     },
     "memory": {
       "config": "SelfIndex_010_BOOL_CUST_CLIB_Null_DOCa",
-      "value": 219.63795430048557,
+      "value": 219.63795338036473,
       "config_details": {
         "name": "SelfIndex_010_BOOL_CUST_CLIB_Null_DOCa",
         "config_id": 10,
@@ -99,9 +99,9 @@
         "coverage_rate": 1.0
       }
     },
-    "selfindex_best_latency": 22.37576246261597,
-    "selfindex_best_throughput": 84.91333774770273,
-    "selfindex_best_memory": 219.63795430048557,
+    "selfindex_best_latency": 22.731685638427738,
+    "selfindex_best_throughput": 85.04538050322876,
+    "selfindex_best_memory": 219.63795338036473,
     "selfindex_best_functional": 0.7948717948717947
   }
 }
